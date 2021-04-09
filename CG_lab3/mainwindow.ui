@@ -526,8 +526,13 @@
       <height>121</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>54</pointsize>
+     </font>
+    </property>
     <property name="text">
-     <string>Restart!</string>
+     <string>RESTART</string>
     </property>
     <property name="autoDefault">
      <bool>false</bool>

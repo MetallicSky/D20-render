@@ -148,3 +148,11 @@ void MainWindow::on_pushButton_restart_clicked()
     QProcess::startDetached(QApplication::applicationFilePath());
     exit(12);
 }
+
+void MainWindow::updateDots()
+{
+    update00();
+    update01();
+    update11();
+    update10();
+}

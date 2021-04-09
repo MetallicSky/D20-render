@@ -57,6 +57,7 @@ private:
 
     MyGraphicView *myPicture;
 
+    void updateDots();
     void update00();
     void update01();
     void update11();
