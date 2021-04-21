@@ -10,7 +10,8 @@ class Dot : public QGraphicsPolygonItem
 public:
     Dot();
 
-    QVector3D coords;
+    QVector3D originalCoords;
+    QVector3D rotatedCoords;
 private:
 
 };

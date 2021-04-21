@@ -52,9 +52,12 @@ MyGraphicView::MyGraphicView(QWidget *parent)
         dots[i]->setPolygon(dotRect);
     }
 
+    lastX = true;
 
     rotX = 0;
     rotY = 0;
+    cacheX = 0;
+    cacheY = 0;
 }
 
 MyGraphicView::~MyGraphicView()
@@ -96,61 +99,97 @@ void MyGraphicView::setP10(QVector3D newCoord)
     setCoord(3, newCoord);
 }
 
-void MyGraphicView::turnX(int degree)
+QVector<QVector3D> MyGraphicView::turnX(int degree)
 {
+    if (lastX == false)
+        updateTurnData();
+
+
     double controlDeg = degree - rotX;
     double A = qDegreesToRadians(controlDeg);
 
-    if (controlDeg == 0)
-        return;
+    QVector<QVector3D> result;
 
     for (int i = 0; i < 4; i++)
     {
-        double newY = dots[i]->coords.y() * qCos(A) + dots[i]->coords.z() * qSin(A);
-        dots[i]->coords.setY(newY);
+        double newY = dots[i]->originalCoords.y() * qCos(A) + dots[i]->originalCoords.z() * qSin(A);
+        dots[i]->rotatedCoords.setY(newY);
 
-        double newZ = - dots[i]->coords.y() * qSin(A) + dots[i]->coords.z() * qCos(A);
-        dots[i]->coords.setZ(newZ);
+        double newZ = - dots[i]->originalCoords.y() * qSin(A) + dots[i]->originalCoords.z() * qCos(A);
+        dots[i]->rotatedCoords.setZ(newZ);
 
 
-        dots[i]->setPos(to2D(dots[i]->coords));
+        dots[i]->setPos(to2D(dots[i]->rotatedCoords));
+
+        result.push_back(dots[i]->rotatedCoords);
     }
 
-    rotX = degree;
+    cacheX = degree;
 
     restart();
+
+    return result;
 }
 
-void MyGraphicView::turnY(int degree)
+QVector<QVector3D> MyGraphicView::turnY(int degree)
 {
+    if (lastX == true)
+            updateTurnData();
+
     double controlDeg = degree - rotY;
     double A = qDegreesToRadians(controlDeg);
 
-    if (controlDeg == 0)
-        return;
+    QVector<QVector3D> result;
 
     for (int i = 0; i < 4; i++)
     {
-        double newX = dots[i]->coords.x() * qCos(A) + dots[i]->coords.z() * qSin(A);
-        dots[i]->coords.setX(newX);
+        double newX = dots[i]->originalCoords.x() * qCos(A) + dots[i]->originalCoords.z() * qSin(A);
+        dots[i]->rotatedCoords.setX(newX);
 
-        double newZ = - dots[i]->coords.x() * qSin(A) + dots[i]->coords.z() * qCos(A);
-        dots[i]->coords.setZ(newZ);
+        double newZ = - dots[i]->originalCoords.x() * qSin(A) + dots[i]->originalCoords.z() * qCos(A);
+        dots[i]->rotatedCoords.setZ(newZ);
 
 
-        dots[i]->setPos(to2D(dots[i]->coords));
+        dots[i]->setPos(to2D(dots[i]->rotatedCoords));
+
+        result.push_back(dots[i]->rotatedCoords);
     }
 
-    rotY = degree;
+    cacheY = degree;
 
     restart();
+
+    return result;
+}
+
+QVector3D MyGraphicView::getP00()
+{
+    return dots[0]->rotatedCoords;
+}
+
+QVector3D MyGraphicView::getP01()
+{
+    return dots[1]->rotatedCoords;
+}
+
+QVector3D MyGraphicView::getP11()
+{
+    return dots[2]->rotatedCoords;
+}
+
+QVector3D MyGraphicView::getP10()
+{
+    return dots[3]->rotatedCoords;
 }
 
 void MyGraphicView::setCoord(int pos, QVector3D newCoord)
 {
-    dots[pos]->coords = newCoord;
+    dots[pos]->rotatedCoords = newCoord;
 
-    dots[pos]->setPos(to2D(dots[pos]->coords));
+    updateTurnData();
+
+
+    dots[pos]->setPos(to2D(dots[pos]->rotatedCoords));
 
     restart();
 }
@@ -202,16 +241,17 @@ void MyGraphicView::drawLines()
 
     // grid lines
 
+    // /*
 
     for (float u = 0.05; u < 1; u += 0.05) // vertical lines
     {
         float w;
 
         w = 0;
-        QVector3D dot1 = dots[0]->coords * ((1 - u) * (1 - w)) + dots[1]->coords * (1 - u) * w + dots[3]->coords * u * (1 - w) + dots[2]->coords * u * w;
+        QVector3D dot1 = dots[0]->rotatedCoords * ((1 - u) * (1 - w)) + dots[1]->rotatedCoords * (1 - u) * w + dots[3]->rotatedCoords * u * (1 - w) + dots[2]->rotatedCoords * u * w;
 
         w = 1;
-        QVector3D dot2 = dots[0]->coords * ((1 - u) * (1 - w)) + dots[1]->coords * (1 - u) * w + dots[3]->coords * u * (1 - w) + dots[2]->coords * u * w;
+        QVector3D dot2 = dots[0]->rotatedCoords * ((1 - u) * (1 - w)) + dots[1]->rotatedCoords * (1 - u) * w + dots[3]->rotatedCoords * u * (1 - w) + dots[2]->rotatedCoords * u * w;
 
         scene->addLine(QLineF(to2D(dot1), to2D(dot2)), pen);
     }
@@ -221,12 +261,24 @@ void MyGraphicView::drawLines()
         float u;
 
         u = 0;
-        QVector3D dot1 = dots[0]->coords * ((1 - u) * (1 - w)) + dots[1]->coords * (1 - u) * w + dots[3]->coords * u * (1 - w) + dots[2]->coords * u * w;
+        QVector3D dot1 = dots[0]->rotatedCoords * ((1 - u) * (1 - w)) + dots[1]->rotatedCoords * (1 - u) * w + dots[3]->rotatedCoords * u * (1 - w) + dots[2]->rotatedCoords * u * w;
 
         u = 1;
-        QVector3D dot2 = dots[0]->coords * ((1 - u) * (1 - w)) + dots[1]->coords * (1 - u) * w + dots[3]->coords * u * (1 - w) + dots[2]->coords * u * w;
+        QVector3D dot2 = dots[0]->rotatedCoords * ((1 - u) * (1 - w)) + dots[1]->rotatedCoords * (1 - u) * w + dots[3]->rotatedCoords * u * (1 - w) + dots[2]->rotatedCoords * u * w;
 
         scene->addLine(QLineF(to2D(dot1), to2D(dot2)), pen);
     }
+    // */
 
+}
+
+void MyGraphicView::updateTurnData()
+{
+    for (int i = 0; i < 4; i++)
+        dots[i]->originalCoords = dots[i]->rotatedCoords;
+
+    lastX = !lastX;
+
+    rotX = cacheX;
+    rotY = cacheY;
 }

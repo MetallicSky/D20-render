@@ -27,14 +27,22 @@ void MainWindow::on_dial_XRotation_valueChanged(int value)
 {
     ui->spinBox_XRotation->setValue(value);
 
-    myPicture->turnX(value);
+    QVector<QVector3D> newDots;
+
+    newDots = myPicture->turnX(value);
+
+    updateSpinboxes(newDots);
 }
 
 void MainWindow::on_dial_YRotation_valueChanged(int value)
 {
     ui->spinBox_YRotation->setValue(value);
 
-    myPicture->turnY(value);
+    QVector<QVector3D> newDots;
+
+    newDots = myPicture->turnY(value);
+
+    updateSpinboxes(newDots);
 }
 
 void MainWindow::on_spinBox_XRotation_valueChanged(int arg1)
@@ -143,6 +151,63 @@ void MainWindow::update10()
     myPicture->setP10(newDot);
 }
 
+void MainWindow::updateSpinboxes(QVector<QVector3D> newDots)
+{
+    // block signals to prevent unwanted valueChanged() signals
+
+    ui->spinBox_X00->blockSignals(true);
+    ui->spinBox_Y00->blockSignals(true);
+    ui->spinBox_Z00->blockSignals(true);
+
+    ui->spinBox_X01->blockSignals(true);
+    ui->spinBox_Y01->blockSignals(true);
+    ui->spinBox_Z01->blockSignals(true);
+
+    ui->spinBox_X11->blockSignals(true);
+    ui->spinBox_Y11->blockSignals(true);
+    ui->spinBox_Z11->blockSignals(true);
+
+    ui->spinBox_X10->blockSignals(true);
+    ui->spinBox_Y10->blockSignals(true);
+    ui->spinBox_Z10->blockSignals(true);
+
+    // change values in peace
+
+    ui->spinBox_X00->setValue(newDots[0].x());
+    ui->spinBox_Y00->setValue(newDots[0].y());
+    ui->spinBox_Z00->setValue(newDots[0].z());
+
+    ui->spinBox_X01->setValue(newDots[1].x());
+    ui->spinBox_Y01->setValue(newDots[1].y());
+    ui->spinBox_Z01->setValue(newDots[1].z());
+
+    ui->spinBox_X11->setValue(newDots[2].x());
+    ui->spinBox_Y11->setValue(newDots[2].y());
+    ui->spinBox_Z11->setValue(newDots[2].z());
+
+    ui->spinBox_X10->setValue(newDots[3].x());
+    ui->spinBox_Y10->setValue(newDots[3].y());
+    ui->spinBox_Z10->setValue(newDots[3].z());
+
+    // return everything to normal
+
+    ui->spinBox_X00->blockSignals(false);
+    ui->spinBox_Y00->blockSignals(false);
+    ui->spinBox_Z00->blockSignals(false);
+
+    ui->spinBox_X01->blockSignals(false);
+    ui->spinBox_Y01->blockSignals(false);
+    ui->spinBox_Z01->blockSignals(false);
+
+    ui->spinBox_X11->blockSignals(false);
+    ui->spinBox_Y11->blockSignals(false);
+    ui->spinBox_Z11->blockSignals(false);
+
+    ui->spinBox_X10->blockSignals(false);
+    ui->spinBox_Y10->blockSignals(false);
+    ui->spinBox_Z10->blockSignals(false);
+}
+
 void MainWindow::on_pushButton_restart_clicked()
 {
     QProcess::startDetached(QApplication::applicationFilePath());
@@ -151,8 +216,34 @@ void MainWindow::on_pushButton_restart_clicked()
 
 void MainWindow::updateDots()
 {
-    update00();
-    update01();
-    update11();
-    update10();
+    QVector3D temp;
+
+    temp = myPicture->getP00();
+
+    ui->spinBox_X00->setValue(temp.x());
+    ui->spinBox_Y00->setValue(temp.y());
+    ui->spinBox_Z00->setValue(temp.z());
+
+    temp = myPicture->getP01();
+
+    ui->spinBox_X01->setValue(temp.x());
+    ui->spinBox_Y01->setValue(temp.y());
+    ui->spinBox_Z01->setValue(temp.z());
+
+    temp = myPicture->getP11();
+
+    ui->spinBox_X11->setValue(temp.x());
+    ui->spinBox_Y11->setValue(temp.y());
+    ui->spinBox_Z11->setValue(temp.z());
+
+    temp = myPicture->getP10();
+
+    ui->spinBox_X10->setValue(temp.x());
+    ui->spinBox_Y10->setValue(temp.y());
+    ui->spinBox_Z10->setValue(temp.z());
+}
+
+void MainWindow::on_spinBox_X00_editingFinished()
+{
+    int i = 0;
 }

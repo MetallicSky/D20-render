@@ -21,15 +21,21 @@ public:
     void setP01(QVector3D newCoord);
     void setP11(QVector3D newCoord);
     void setP10(QVector3D newCoord);
-    void turnX(int degree);
-    void turnY(int degree);
+    QVector<QVector3D> turnX(int degree);
+    QVector<QVector3D> turnY(int degree);
+    QVector3D getP00();
+    QVector3D getP01();
+    QVector3D getP11();
+    QVector3D getP10();
 
 private:
     Dot* dots[4];
 
     QGraphicsScene *scene;
 
-    int rotX, rotY;
+    bool lastX;
+
+    int rotX, rotY, cacheX, cacheY;
 
     double xx, xy, yx, yy, zy;
 
@@ -37,6 +43,7 @@ private:
     void setCoord(int pos, QVector3D newCoord);
     void restart();
     void drawLines();
+    void updateTurnData();
 };
 
 #endif // MYGRAPHICVIEW_H

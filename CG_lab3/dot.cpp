@@ -2,7 +2,8 @@
 
 Dot::Dot()
 {
-    coords.setX(0);
-    coords.setY(0);
-    coords.setZ(0);
+    originalCoords.setX(0);
+    originalCoords.setY(0);
+    originalCoords.setZ(0);
+    rotatedCoords = originalCoords;
 }

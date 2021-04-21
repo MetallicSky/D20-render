@@ -70,8 +70,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_X00">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -93,8 +96,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_Y00">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -116,8 +122,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_Z00">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -164,8 +173,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_X01">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -187,8 +199,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_Y01">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -210,8 +225,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_Z01">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -258,8 +276,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_X11">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -281,8 +302,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_Y11">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -304,8 +328,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_Z11">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -352,8 +379,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_X10">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -375,8 +405,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_Y10">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>
@@ -398,8 +431,11 @@
       </item>
       <item>
        <widget class="QSpinBox" name="spinBox_Z10">
+        <property name="minimum">
+         <number>-10000</number>
+        </property>
         <property name="maximum">
-         <number>500</number>
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>10</number>

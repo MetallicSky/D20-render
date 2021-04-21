@@ -52,6 +52,8 @@ private slots:
 
     void on_pushButton_restart_clicked();
 
+    void on_spinBox_X00_editingFinished();
+
 private:
     Ui::MainWindow *ui;
 
@@ -62,5 +64,6 @@ private:
     void update01();
     void update11();
     void update10();
+    void updateSpinboxes(QVector<QVector3D> newDots);
 };
 #endif // MAINWINDOW_H
