@@ -7,7 +7,7 @@
 #include <QPointF>
 #include <QtMath>
 #include <QPen>
-#include "dot.h"
+#include "polygon.h"
 
 class MyGraphicView : public QGraphicsView
 {
@@ -16,34 +16,34 @@ public:
     MyGraphicView(QWidget *parent = 0);
     ~MyGraphicView();
 
-
-    void setP00(QVector3D newCoord);
-    void setP01(QVector3D newCoord);
-    void setP11(QVector3D newCoord);
-    void setP10(QVector3D newCoord);
-    QVector<QVector3D> turnX(int degree);
-    QVector<QVector3D> turnY(int degree);
-    QVector3D getP00();
-    QVector3D getP01();
-    QVector3D getP11();
-    QVector3D getP10();
-
+    void turnX(int degree);
+    void turnY(int degree);
+    void turnZ(int degree);
+    void setScale(int newScale);
+    void setXRay(bool value);
+    void setColors(bool value);
 private:
-    Dot* dots[4];
+
+    Polygon polygons[20];
 
     QGraphicsScene *scene;
 
-    bool lastX;
+    bool xRay, colors;
 
-    int rotX, rotY, cacheX, cacheY;
+    int rotX, rotY, rotZ, cacheX, cacheY, cacheZ, lastAxis;
 
-    double xx, xy, yx, yy, zy;
+    double xx, xy, yx, yy, zy, scale;
 
     QPointF to2D(QVector3D coord);
-    void setCoord(int pos, QVector3D newCoord);
     void restart();
-    void drawLines();
-    void updateTurnData();
+    void drawPolygons();
+    void updateTurnData(int newLastAxis);
+
+    void setPolygons();
+    void setPolColors();
+    void sortCloseness();
+
+    void swap(int left, int right);
 };
 
 #endif // MYGRAPHICVIEW_H

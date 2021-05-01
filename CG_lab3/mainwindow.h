@@ -22,48 +22,26 @@ private slots:
 
     void on_dial_YRotation_valueChanged(int value);
 
+    void on_dial_ZRotation_valueChanged(int value);
+
     void on_spinBox_XRotation_valueChanged(int arg1);
 
     void on_spinBox_YRotation_valueChanged(int arg1);
 
-    void on_spinBox_X00_valueChanged(int arg1);
-
-    void on_spinBox_Y00_valueChanged(int arg1);
-
-    void on_spinBox_Z00_valueChanged(int arg1);
-
-    void on_spinBox_X01_valueChanged(int arg1);
-
-    void on_spinBox_Y01_valueChanged(int arg1);
-
-    void on_spinBox_Z01_valueChanged(int arg1);
-
-    void on_spinBox_X11_valueChanged(int arg1);
-
-    void on_spinBox_Y11_valueChanged(int arg1);
-
-    void on_spinBox_Z11_valueChanged(int arg1);
-
-    void on_spinBox_X10_valueChanged(int arg1);
-
-    void on_spinBox_Y10_valueChanged(int arg1);
-
-    void on_spinBox_Z10_valueChanged(int arg1);
+    void on_spinBox_ZRotation_valueChanged(int arg1);
 
     void on_pushButton_restart_clicked();
 
-    void on_spinBox_X00_editingFinished();
+    void on_verticalSlider_zoom_valueChanged(int value);
+
+    void on_checkBox_colors_stateChanged(int arg1);
+
+    void on_checkBox_XRay_stateChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;
 
     MyGraphicView *myPicture;
 
-    void updateDots();
-    void update00();
-    void update01();
-    void update11();
-    void update10();
-    void updateSpinboxes(QVector<QVector3D> newDots);
 };
 #endif // MAINWINDOW_H

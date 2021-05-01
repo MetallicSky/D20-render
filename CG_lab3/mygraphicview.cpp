@@ -1,5 +1,7 @@
 #include "mygraphicview.h"
 
+const double goldenRatio =  (1 + sqrt(5)) / 2;
+
 MyGraphicView::MyGraphicView(QWidget *parent)
     : QGraphicsView(parent)
 {
@@ -31,33 +33,31 @@ MyGraphicView::MyGraphicView(QWidget *parent)
     zy = -1;
 
 
-    QBrush brush;
-    brush.setStyle(Qt::DiagCrossPattern);
-    brush.setColor(Qt::red);
+    setPolygons();
+    for (int i = 0; i < 20; i++)
+        for (int j = 0; j < 3; j++)
+            polygons[i].rotatedDots[j] = polygons[i].originalDots[j];
 
-    QVector<QPointF> dotRect;
-    dotRect << QPoint(-5,-5)
-              << QPointF(5, -5)
-              << QPointF(5, 5)
-              << QPointF(-5, 5);
+    setPolColors();
 
-    for (int i = 0; i < 4; i++)
-    {
-        dots[i] = new Dot;
+    sortCloseness();
 
-        scene->addItem(dots[i]);
 
-        dots[i]->setBrush(brush);
-
-        dots[i]->setPolygon(dotRect);
-    }
-
-    lastX = true;
+    lastAxis = 0;
 
     rotX = 0;
     rotY = 0;
+    rotZ = 0;
     cacheX = 0;
     cacheY = 0;
+    cacheZ = 0;
+
+    scale = 50;
+
+    xRay = false;
+    colors = true;
+
+    restart();
 }
 
 MyGraphicView::~MyGraphicView()
@@ -79,146 +79,115 @@ QPointF MyGraphicView::to2D(QVector3D coord)
     return result;
 }
 
-void MyGraphicView::setP00(QVector3D newCoord)
+void MyGraphicView::turnX(int degree)
 {
-    setCoord(0, newCoord);
-}
-
-void MyGraphicView::setP01(QVector3D newCoord)
-{
-    setCoord(1, newCoord);
-}
-
-void MyGraphicView::setP11(QVector3D newCoord)
-{
-    setCoord(2, newCoord);
-}
-
-void MyGraphicView::setP10(QVector3D newCoord)
-{
-    setCoord(3, newCoord);
-}
-
-QVector<QVector3D> MyGraphicView::turnX(int degree)
-{
-    if (lastX == false)
-        updateTurnData();
+    if (lastAxis != 0)
+        updateTurnData(0);
 
 
     double controlDeg = degree - rotX;
     double A = qDegreesToRadians(controlDeg);
 
-    QVector<QVector3D> result;
+    for (int i = 0; i < 20; i++)
+        for (int j = 0; j < 3; j++)
+        {
+            double newY = polygons[i].originalDots[j].y() * qCos(A) + polygons[i].originalDots[j].z() * qSin(A);
+            polygons[i].rotatedDots[j].setY(newY);
 
-    for (int i = 0; i < 4; i++)
-    {
-        double newY = dots[i]->originalCoords.y() * qCos(A) + dots[i]->originalCoords.z() * qSin(A);
-        dots[i]->rotatedCoords.setY(newY);
-
-        double newZ = - dots[i]->originalCoords.y() * qSin(A) + dots[i]->originalCoords.z() * qCos(A);
-        dots[i]->rotatedCoords.setZ(newZ);
-
-
-        dots[i]->setPos(to2D(dots[i]->rotatedCoords));
-
-        result.push_back(dots[i]->rotatedCoords);
-    }
+            double newZ = - polygons[i].originalDots[j].y() * qSin(A) + polygons[i].originalDots[j].z() * qCos(A);
+            polygons[i].rotatedDots[j].setZ(newZ);
+        }
 
     cacheX = degree;
 
     restart();
-
-    return result;
 }
 
-QVector<QVector3D> MyGraphicView::turnY(int degree)
+void MyGraphicView::turnY(int degree)
 {
-    if (lastX == true)
-            updateTurnData();
+    if (lastAxis != 1)
+        updateTurnData(1);
 
     double controlDeg = degree - rotY;
     double A = qDegreesToRadians(controlDeg);
 
-    QVector<QVector3D> result;
+    for (int i = 0; i < 20; i++)
+        for (int j = 0; j < 3; j++)
+        {
+            double newX = polygons[i].originalDots[j].x() * qCos(A) + polygons[i].originalDots[j].z() * qSin(A);
+            polygons[i].rotatedDots[j].setX(newX);
 
-    for (int i = 0; i < 4; i++)
-    {
-        double newX = dots[i]->originalCoords.x() * qCos(A) + dots[i]->originalCoords.z() * qSin(A);
-        dots[i]->rotatedCoords.setX(newX);
-
-        double newZ = - dots[i]->originalCoords.x() * qSin(A) + dots[i]->originalCoords.z() * qCos(A);
-        dots[i]->rotatedCoords.setZ(newZ);
-
-
-        dots[i]->setPos(to2D(dots[i]->rotatedCoords));
-
-        result.push_back(dots[i]->rotatedCoords);
-    }
+            double newZ = - polygons[i].originalDots[j].x() * qSin(A) + polygons[i].originalDots[j].z() * qCos(A);
+            polygons[i].rotatedDots[j].setZ(newZ);
+        }
 
     cacheY = degree;
 
     restart();
-
-    return result;
 }
 
-QVector3D MyGraphicView::getP00()
+void MyGraphicView::turnZ(int degree)
 {
-    return dots[0]->rotatedCoords;
+    if (lastAxis != 2)
+        updateTurnData(2);
+
+    double controlDeg = degree - rotZ;
+    double A = qDegreesToRadians(controlDeg);
+
+    for (int i = 0; i < 20; i++)
+        for (int j = 0; j < 3; j++)
+        {
+            double newX = polygons[i].originalDots[j].x() * qCos(A) - polygons[i].originalDots[j].y() * qSin(A);
+            polygons[i].rotatedDots[j].setX(newX);
+
+            double newY = - polygons[i].originalDots[j].x() * qSin(A) + polygons[i].originalDots[j].y() * qCos(A);
+            polygons[i].rotatedDots[j].setY(newY);
+        }
+
+    cacheZ = degree;
+
+    restart();
 }
 
-QVector3D MyGraphicView::getP01()
+void MyGraphicView::setScale(int newScale)
 {
-    return dots[1]->rotatedCoords;
+    scale = newScale;
+    restart();
 }
 
-QVector3D MyGraphicView::getP11()
+void MyGraphicView::setXRay(bool value)
 {
-    return dots[2]->rotatedCoords;
+    xRay = value;
+    restart();
 }
 
-QVector3D MyGraphicView::getP10()
+void MyGraphicView::setColors(bool value)
 {
-    return dots[3]->rotatedCoords;
-}
-
-void MyGraphicView::setCoord(int pos, QVector3D newCoord)
-{
-    dots[pos]->rotatedCoords = newCoord;
-
-    updateTurnData();
-
-
-    dots[pos]->setPos(to2D(dots[pos]->rotatedCoords));
-
+    colors = value;
     restart();
 }
 
 void MyGraphicView::restart()
 {
-    for (int i = 0; i < 4; i++)
-        scene->removeItem(dots[i]);
+    sortCloseness();
 
     scene->clear();
 
-    for (int i = 0; i < 4; i++)
-        scene->addItem(dots[i]);
-
-    drawLines();
+    drawPolygons();
 }
 
-void MyGraphicView::drawLines()
+void MyGraphicView::drawPolygons()
 {
     QPainter painter(this);
-
-    // axis lines
-
-    QPen axisPen(Qt::green, 3, Qt::DotLine, Qt::SquareCap, Qt::RoundJoin);
-    painter.setPen(axisPen);
 
     QPointF center(scene->width() / 2, scene->height() / 2);
 
     QPointF temp;
+
+    // axis lines
+    /*
+    QPen axisPen(Qt::green, 3, Qt::DotLine, Qt::SquareCap, Qt::RoundJoin);
+    painter.setPen(axisPen);
 
     temp = to2D(QVector3D(100, 0, 0));
     scene->addLine(QLineF(center, temp), axisPen);
@@ -228,57 +197,209 @@ void MyGraphicView::drawLines()
 
     temp = to2D(QVector3D(0, 0, 100));
     scene->addLine(QLineF(center, temp), axisPen);
-
+    */
     //
 
     QPen pen(Qt::green, 1, Qt::SolidLine, Qt::SquareCap, Qt::RoundJoin);
     painter.setPen(pen);
 
-    // 4 border lines
+    // polygons
 
-    for (int i = 0; i < 4; i++)
-        scene->addLine(QLineF(dots[i]->pos(), dots[(i + 1) % 4]->pos()), pen);
-
-    // grid lines
-
-    // /*
-
-    for (float u = 0.05; u < 1; u += 0.05) // vertical lines
+    for (int i = 0; i < 20; i++)
     {
-        float w;
+        QPolygonF poly;
+        poly << to2D(polygons[i].rotatedDots[0]* scale) << to2D(polygons[i].rotatedDots[1] * scale) << to2D(polygons[i].rotatedDots[2] * scale);
 
-        w = 0;
-        QVector3D dot1 = dots[0]->rotatedCoords * ((1 - u) * (1 - w)) + dots[1]->rotatedCoords * (1 - u) * w + dots[3]->rotatedCoords * u * (1 - w) + dots[2]->rotatedCoords * u * w;
+        QBrush brush;
+        brush.setStyle(Qt::SolidPattern);
+        if (colors == true)
+            brush.setColor(polygons[i].color);
+        else
+            brush.setColor(Qt::black);
 
-        w = 1;
-        QVector3D dot2 = dots[0]->rotatedCoords * ((1 - u) * (1 - w)) + dots[1]->rotatedCoords * (1 - u) * w + dots[3]->rotatedCoords * u * (1 - w) + dots[2]->rotatedCoords * u * w;
 
-        scene->addLine(QLineF(to2D(dot1), to2D(dot2)), pen);
+        scene->addPolygon(poly, pen, brush);
     }
 
-    for (float w = 0.05; w < 1; w += 0.05) // horizontal lines
-    {
-        float u;
+    if (xRay == true)
+        for (int i = 0; i < 20; i++)
+        {
+            QPolygonF poly;
+            poly << to2D(polygons[i].rotatedDots[0]* scale) << to2D(polygons[i].rotatedDots[1] * scale) << to2D(polygons[i].rotatedDots[2] * scale);
 
-        u = 0;
-        QVector3D dot1 = dots[0]->rotatedCoords * ((1 - u) * (1 - w)) + dots[1]->rotatedCoords * (1 - u) * w + dots[3]->rotatedCoords * u * (1 - w) + dots[2]->rotatedCoords * u * w;
+            QBrush brush;
 
-        u = 1;
-        QVector3D dot2 = dots[0]->rotatedCoords * ((1 - u) * (1 - w)) + dots[1]->rotatedCoords * (1 - u) * w + dots[3]->rotatedCoords * u * (1 - w) + dots[2]->rotatedCoords * u * w;
 
-        scene->addLine(QLineF(to2D(dot1), to2D(dot2)), pen);
-    }
-    // */
+            scene->addPolygon(poly, pen, brush);
+        }
 
 }
 
-void MyGraphicView::updateTurnData()
+void MyGraphicView::updateTurnData(int newLastAxis)
 {
-    for (int i = 0; i < 4; i++)
-        dots[i]->originalCoords = dots[i]->rotatedCoords;
+    for (int i = 0; i < 20; i++)
+        for (int j = 0; j < 3; j++)
+            polygons[i].originalDots[j] = polygons[i].rotatedDots[j];
 
-    lastX = !lastX;
+
+    lastAxis = newLastAxis;
 
     rotX = cacheX;
     rotY = cacheY;
+    rotZ = cacheZ;
+
+}
+
+void MyGraphicView::setPolygons()
+{
+    QVector3D vertexes[12]; // generating vertexes for polygons (faces)
+
+    vertexes[0].setX(pow(goldenRatio, 2));
+    vertexes[0].setY(0);
+    vertexes[0].setZ(pow(goldenRatio, 3));
+
+    vertexes[1] = vertexes[0];
+    vertexes[1].setX(-vertexes[1].x());
+
+    vertexes[10] = vertexes[0];
+    vertexes[10].setZ(-vertexes[10].z());
+
+    vertexes[11] = vertexes[10];
+    vertexes[11].setX(-vertexes[11].x());
+
+
+    vertexes[2].setX(0);
+    vertexes[2].setY(pow(goldenRatio, 3));
+    vertexes[2].setZ(pow(goldenRatio, 2));
+
+    vertexes[3] = vertexes[2];
+    vertexes[3].setY(-vertexes[3].y());
+
+    vertexes[8] = vertexes[2];
+    vertexes[8].setZ(-vertexes[8].z());
+
+    vertexes[9] = vertexes[8];
+    vertexes[9].setY(-vertexes[9].y());
+
+
+    vertexes[4].setX(pow(goldenRatio, 3));
+    vertexes[4].setY(pow(goldenRatio, 2));
+    vertexes[4].setZ(0);
+
+    vertexes[5] = vertexes[4];
+    vertexes[5].setX(-vertexes[5].x());
+
+    vertexes[6] = -vertexes[4];
+
+    vertexes[7] = vertexes[6];
+    vertexes[7].setX(-vertexes[7].x());
+
+
+
+    polygons[0].setOriginal(vertexes[0], vertexes[1], vertexes[3]);
+    polygons[1].setOriginal(vertexes[0], vertexes[2], vertexes[1]);
+    polygons[2].setOriginal(vertexes[0], vertexes[3], vertexes[7]);
+    polygons[3].setOriginal(vertexes[0], vertexes[7], vertexes[4]);
+    polygons[4].setOriginal(vertexes[0], vertexes[4], vertexes[2]);
+    polygons[5].setOriginal(vertexes[7], vertexes[10], vertexes[4]);
+    polygons[6].setOriginal(vertexes[4], vertexes[10], vertexes[8]);
+    polygons[7].setOriginal(vertexes[4], vertexes[8], vertexes[2]);
+    polygons[8].setOriginal(vertexes[2], vertexes[8], vertexes[5]);
+    polygons[9].setOriginal(vertexes[2], vertexes[5], vertexes[1]);
+    polygons[10].setOriginal(vertexes[1], vertexes[5], vertexes[6]);
+    polygons[11].setOriginal(vertexes[1], vertexes[6], vertexes[3]);
+    polygons[12].setOriginal(vertexes[3], vertexes[6], vertexes[9]);
+    polygons[13].setOriginal(vertexes[3], vertexes[9], vertexes[7]);
+    polygons[14].setOriginal(vertexes[7], vertexes[9], vertexes[10]);
+    polygons[15].setOriginal(vertexes[11], vertexes[10], vertexes[9]);
+    polygons[16].setOriginal(vertexes[11], vertexes[8], vertexes[10]);
+    polygons[17].setOriginal(vertexes[11], vertexes[5], vertexes[8]);
+    polygons[18].setOriginal(vertexes[11], vertexes[6], vertexes[5]);
+    polygons[19].setOriginal(vertexes[11], vertexes[9], vertexes[6]);
+}
+
+void MyGraphicView::setPolColors()
+{
+    polygons[0].color = QColorConstants::Svg::maroon;
+    polygons[1].color = QColorConstants::Svg::brown;
+    polygons[2].color = QColorConstants::Svg::olive;
+    polygons[3].color = QColorConstants::Svg::teal;
+    polygons[4].color = QColorConstants::Svg::navy;
+    polygons[5].color = QColorConstants::Svg::black;
+    polygons[6].color = QColorConstants::Svg::red;
+    polygons[7].color = QColorConstants::Svg::orange;
+    polygons[8].color = QColorConstants::Svg::yellow;
+    polygons[9].color = QColorConstants::Svg::lime;
+    polygons[10].color = QColorConstants::Svg::green;
+    polygons[11].color = QColorConstants::Svg::cyan;
+    polygons[12].color = QColorConstants::Svg::blue;
+    polygons[13].color = QColorConstants::Svg::purple;
+    polygons[14].color = QColorConstants::Svg::magenta;
+    polygons[15].color = QColorConstants::Svg::grey;
+    polygons[16].color = QColorConstants::Svg::pink;
+    polygons[17].color = QColorConstants::Svg::coral;
+    polygons[18].color = QColorConstants::Svg::beige;
+    polygons[19].color = QColorConstants::Svg::mediumspringgreen;
+}
+
+void MyGraphicView::sortCloseness()
+{
+    double minX, minY, minZ, maxX, maxY, maxZ;
+
+    minX = 1000;
+    minY = 1000;
+    minZ = 1000;
+
+    for (int i = 0; i < 20; i++)
+    {
+        QVector3D temp = polygons[i].getCenter();
+
+        if (temp.x() < minX)
+            minX = temp.x();
+
+        if (temp.y() < minY)
+            minY = temp.y();
+
+        if (temp.z() < minZ)
+            minZ = temp.z();
+    }
+
+    QVector3D backpoint(minX, minY, minZ);
+
+    QVector3D planePoint1(backpoint.x() * 100, 0, 0);
+    QVector3D planePoint2(0, backpoint.y() * 100, 0);
+    QVector3D planePoint3(0, 0, backpoint.z() * 100);
+
+    for (int i = 0; i < 20; i++)
+    {
+        double distance = polygons[i].getCenter().distanceToPlane(planePoint1, planePoint2, planePoint3);
+        if (distance < 0)
+            distance = -1 * distance;
+        polygons[i].closeness = distance;
+
+    }
+
+
+    bool swapped = true; // bubble sort
+
+    while (swapped != false)
+    {
+        swapped = false;
+        for (int i = 1; i < 20; i++)
+            if (polygons[i - 1].closeness > polygons[i].closeness)
+            {
+                swap(i - 1, i);
+                swapped = true;
+            }
+    }
+}
+
+void MyGraphicView::swap(int left, int right)
+{
+    if (left != right)
+    {
+        Polygon temp = polygons[left];
+        polygons[left] = polygons[right];
+        polygons[right] = temp;
+    }
 }
